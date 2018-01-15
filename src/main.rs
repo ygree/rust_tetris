@@ -65,26 +65,29 @@ struct FigureMap([bool; 16]);
 
 impl FigureMap {
 
-    fn rotate(&mut self) {
+    fn swap(&mut self, (r1, c1): (usize, usize), (r2, c2): (usize, usize) ) {
         fn p(x: usize, y: usize) -> usize {
             x + 4*y
         }
+        self.0.swap(p(r1,c1), p(r2,c2));
+    }
 
-        self.0.swap(p(0,0), p(3,0));
-        self.0.swap(p(0,0), p(0,3));
-        self.0.swap(p(0,3), p(3,3));
+    fn rotate(&mut self) {
+        self.swap((0,0), (3,0));
+        self.swap((0,0), (0,3));
+        self.swap((0,3), (3,3));
 
-        self.0.swap(p(0,1), p(2,0));
-        self.0.swap(p(0,1), p(1,3));
-        self.0.swap(p(1,3), p(3,2));
+        self.swap((0,1), (2,0));
+        self.swap((0,1), (1,3));
+        self.swap((1,3), (3,2));
 
-        self.0.swap(p(0,2), p(1,0));
-        self.0.swap(p(0,2), p(2,3));
-        self.0.swap(p(2,3), p(3,1));
+        self.swap((0,2), (1,0));
+        self.swap((0,2), (2,3));
+        self.swap((2,3), (3,1));
 
-        self.0.swap(p(1,1), p(2,1));
-        self.0.swap(p(1,1), p(1,2));
-        self.0.swap(p(1,2), p(2,2));
+        self.swap((1,1), (2,1));
+        self.swap((1,1), (1,2));
+        self.swap((1,2), (2,2));
     }
 }
 
