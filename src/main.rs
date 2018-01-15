@@ -19,63 +19,71 @@ enum Figure {
 
 impl Figure {
 
-    fn draw(&self) -> [bool; 16] {
+    fn draw(&self) -> FigureMap {
+        use Figure::*;
         const O: bool = false;
         const X: bool = true;
-        match self {
-            &Figure::Cube => [
+        match *self {
+            Cube => FigureMap([
                 O, O, O, O,
                 O, X, X, O,
                 O, X, X, O,
                 O, O, O, O,
-            ],
-            &Figure::Line => [
+            ]),
+            Line => FigureMap([
                 O, O, O, O,
                 O, O, O, O,
                 X, X, X, X,
                 O, O, O, O,
-            ],
-            &Figure::Base => [
+            ]),
+            Base => FigureMap([
                 O, O, O, O,
                 O, O, X, O,
                 O, X, X, X,
                 O, O, O, O,
-            ],
-            &Figure::LeftZig => [
+            ]),
+            LeftZig => FigureMap([
                 O, O, O, O,
                 O, X, X, O,
                 O, O, X, X,
                 O, O, O, O,
-            ],
-            &Figure::RightZig => [
+            ]),
+            RightZig => FigureMap([
                 O, O, O, O,
                 O, X, X, O,
                 X, X, O, O,
                 O, O, O, O,
-            ],
+            ]),
         }
     }
 
-    fn rotate(map: &mut [bool; 16]) {
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+struct FigureMap([bool; 16]);
+
+impl FigureMap {
+
+    fn rotate(&mut self) {
         fn p(x: usize, y: usize) -> usize {
             x + 4*y
         }
 
-        map.swap(p(0,0), p(3,0));
-        map.swap(p(0,0), p(0,3));
-        map.swap(p(0,3), p(3,3));
+        self.0.swap(p(0,0), p(3,0));
+        self.0.swap(p(0,0), p(0,3));
+        self.0.swap(p(0,3), p(3,3));
 
-        map.swap(p(0,1), p(2,0));
-        map.swap(p(0,1), p(1,3));
-        map.swap(p(1,3), p(3,2));
+        self.0.swap(p(0,1), p(2,0));
+        self.0.swap(p(0,1), p(1,3));
+        self.0.swap(p(1,3), p(3,2));
 
-        map.swap(p(0,2), p(1,0));
-        map.swap(p(0,2), p(2,3));
-        map.swap(p(2,3), p(3,1));
+        self.0.swap(p(0,2), p(1,0));
+        self.0.swap(p(0,2), p(2,3));
+        self.0.swap(p(2,3), p(3,1));
 
-        map.swap(p(1,1), p(2,1));
-        map.swap(p(1,1), p(1,2));
-        map.swap(p(1,2), p(2,2));
+        self.0.swap(p(1,1), p(2,1));
+        self.0.swap(p(1,1), p(1,2));
+        self.0.swap(p(1,2), p(2,2));
     }
 }
 
@@ -85,15 +93,16 @@ mod tests {
 
     quickcheck! {
 
+        //TODO implement generator for figure
         fn four_rotations(v: i32) -> bool {
 
             let drawn = Figure::LeftZig.draw();
             let mut rotated = drawn.clone();
 
-            Figure::rotate(&mut rotated);
-            Figure::rotate(&mut rotated);
-            Figure::rotate(&mut rotated);
-            Figure::rotate(&mut rotated);
+            rotated.rotate();
+            rotated.rotate();
+            rotated.rotate();
+            rotated.rotate();
 
             drawn == rotated
         }
