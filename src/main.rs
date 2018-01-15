@@ -9,6 +9,7 @@ fn main() {
     println!("Hello, world!");
 }
 
+#[derive(Debug, Clone)]
 enum Figure {
     Cube,
     Line,
@@ -87,16 +88,25 @@ impl FigureMap {
     }
 }
 
+use quickcheck::Arbitrary;
+use quickcheck::Gen;
+
+impl Arbitrary for Figure {
+
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        use Figure::*;
+        g.choose(&[Cube, Line, Base, LeftZig, RightZig]).unwrap().clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     quickcheck! {
 
-        //TODO implement generator for figure
-        fn four_rotations(v: i32) -> bool {
-
-            let drawn = Figure::LeftZig.draw();
+        fn four_rotations(f: Figure) -> bool {
+            let drawn = f.draw();
             let mut rotated = drawn.clone();
 
             rotated.rotate();
