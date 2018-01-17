@@ -99,6 +99,30 @@ impl Glass {
         }
         false
     }
+
+    fn freeze_figure(&mut self) {
+        if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
+
+            for figure_row in 0 .. figure.height() {
+                for figure_col in 0..figure.width() {
+                    let glass_row = row + figure_row as isize;
+                    let glass_col = col + figure_col as isize;
+
+                    let is_outsize_glass =
+                        glass_row < 0 || glass_row > self.width as isize ||
+                            glass_col < 0 || glass_col > self.height as isize;
+
+                    let has_value = figure[figure_row][figure_col];
+
+                    if has_value && !is_outsize_glass {
+                        self[glass_row as usize][glass_col as usize] = true;
+                    }
+                }
+            }
+
+
+        }
+    }
 }
 
 
