@@ -1,6 +1,8 @@
 
+extern crate quickcheck;
+
 #[derive(Debug, Clone)]
-enum Figure {
+pub enum Figure {
     Cube,
     Line,
     Base,
@@ -10,7 +12,7 @@ enum Figure {
 
 impl Figure {
 
-    fn draw(&self) -> FigureMap {
+    pub fn draw(&self) -> FigureMap {
         use self::Figure::*;
         const O: bool = false;
         const X: bool = true;
@@ -51,7 +53,17 @@ impl Figure {
 }
 
 #[derive(Clone, Copy, Eq, PartialEq)]
-struct FigureMap([bool; 16]);
+pub struct FigureMap([bool; 16]);
+
+impl FigureMap {
+    pub fn height(&self) -> usize {
+        4
+    }
+
+    pub fn width(&self) -> usize {
+        4
+    }
+}
 
 impl ::std::ops::Index<usize> for FigureMap {
     type Output = [bool];
@@ -72,13 +84,13 @@ impl ::std::ops::IndexMut<usize> for FigureMap {
 impl FigureMap {
 
     fn swap(&mut self, (r1, c1): (usize, usize), (r2, c2): (usize, usize) ) {
-        fn p(x: usize, y: usize) -> usize {
-            x + 4*y
+        fn p(row: usize, column: usize) -> usize {
+            row + 4*column
         }
         self.0.swap(p(r1,c1), p(r2,c2));
     }
 
-    fn rotate(&mut self) {
+    pub fn rotate(&mut self) {
         self.swap((0,0), (3,0));
         self.swap((0,0), (0,3));
         self.swap((0,3), (3,3));
