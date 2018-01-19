@@ -6,13 +6,13 @@ pub struct Glass {
     pub width: usize,
     pub height: usize,
     map: Vec<bool>,
-    figure: Option<FigureInGlass>,
+    pub figure: Option<FigureInGlass>,
 }
 
 #[derive(Copy, Clone)]
-struct FigureInGlass {
-    figure: FigureMap,
-    position: (isize, isize),
+pub struct FigureInGlass {
+    pub figure: FigureMap,
+    pub position: (isize, isize),
 }
 
 enum MoveDirection {
@@ -38,12 +38,12 @@ impl Glass {
         Glass {
             width,
             height,
-            map: Vec::with_capacity(width * height),
+            map: vec![false; width * height],
             figure: None
         }
     }
 
-    fn place(&mut self, fmap: FigureMap, (row, col): (isize, isize)) -> bool {
+    pub fn place(&mut self, fmap: FigureMap, (row, col): (isize, isize)) -> bool {
         if !self.fit_glass(&fmap, (row, col)) { false }
         else {
             self.figure = Some(FigureInGlass {
@@ -68,8 +68,10 @@ impl Glass {
 
                 let has_value = fmap[figure_row][figure_col];
 
-                if has_value && (is_outsize_glass || self[glass_row as usize][glass_col as usize]) {
-                    return false;
+                if has_value {
+                    if is_outsize_glass || self[glass_row as usize][glass_col as usize] {
+                        return false;
+                    }
                 }
             }
         }

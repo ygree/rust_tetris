@@ -20,6 +20,8 @@ use ggez::nalgebra as na;
 
 use glass::Glass;
 
+use figures::Figure;
+
 mod figures;
 mod glass;
 
@@ -38,7 +40,14 @@ impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
         ctx.print_resource_stats();
         graphics::set_background_color(ctx, (33, 55, 122, 255).into());
-        let glass = Glass::new(12, 26);
+        let mut glass = Glass::new(12, 26);
+        let figure = Figure::LeftZig;
+        let figure_map = figure.draw();
+
+        let row = 0;
+        let col = (glass.width as isize - 4) / 2 - 1;
+        glass.place(figure_map, (row, col));
+
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
         let block_size = screen_height as f32 * 3.0/4.0 / glass.height as f32;
@@ -55,11 +64,46 @@ impl MainState {
     }
 
     fn draw_glass(&self, ctx: &mut Context) -> GameResult<()> {
-        let w = self.block_size * self.glass.width as f32;
-        let x = (self.screen_width as f32 - w) / 2.0;
-        let h = self.block_size * self.glass.height as f32;
-        let y = (self.screen_height as f32 - h) / 2.0;
+        let w = self.glass_width();
+        let x = self.glass_x();
+        let h = self.glass_height();
+        let y = self.glass_y();
         graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h })?;
+        Ok(())
+    }
+
+    fn glass_width(&self) -> f32 {
+        self.block_size * self.glass.width as f32
+    }
+
+    fn glass_x(&self) -> f32 {
+        let w = self.glass_width();
+        (self.screen_width as f32 - w) / 2.0
+    }
+
+    fn glass_height(&self) -> f32 {
+        self.block_size * self.glass.height as f32
+    }
+
+    fn glass_y(&self) -> f32 {
+        let h = self.glass_height();
+        (self.screen_height as f32 - h) / 2.0
+    }
+
+    fn draw_figure(&self, ctx: &mut Context) -> GameResult<()> {
+        let figure = self.glass.figure.unwrap(); //TODO: FIX!
+        for row in 0..4 {
+            for col in 0..4 {
+                if figure.figure[row][col] {
+                    let w = self.block_size;
+                    let (f_row, f_col) = figure.position;
+                    let x = self.glass_x() + (f_col as f32 + col as f32) * w;
+                    let y = self.glass_y() + (f_row as f32 + row as f32) * w;
+
+                    graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
+                }
+            }
+        }
         Ok(())
     }
 }
@@ -82,6 +126,8 @@ impl EventHandler for MainState {
                          0.10)?;
 
         self.draw_glass(ctx);
+
+        self.draw_figure(ctx);
 
         graphics::present(ctx);
         timer::yield_now();
