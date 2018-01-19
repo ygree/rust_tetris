@@ -10,7 +10,7 @@ use ggez::conf;
 use ggez::event::*;
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics;
-use ggez::graphics::{DrawMode, Point2};
+use ggez::graphics::{DrawMode, Point2, Rect};
 use ggez::timer;
 //use ggez::graphics::{Vector2, Point2};
 use ggez::nalgebra as na;
@@ -29,15 +29,19 @@ struct MainState {
     x: f32,
     y: f32,
     dx: f32,
-    dy: f32
+    dy: f32,
+    glass: Glass,
+    block_size: f32
 }
 
 impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
         ctx.print_resource_stats();
         graphics::set_background_color(ctx, (33, 55, 122, 255).into());
+        let glass = Glass::new(12, 26);
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
+        let block_size = screen_height as f32 * 3.0/4.0 / glass.height as f32;
         Ok(MainState {
             screen_width,
             screen_height,
@@ -45,7 +49,18 @@ impl MainState {
             y: screen_height as f32 / 2.0,
             dx: 0.0,
             dy: 0.0,
+            glass,
+            block_size,
         })
+    }
+
+    fn draw_glass(&self, ctx: &mut Context) -> GameResult<()> {
+        let w = self.block_size * self.glass.width as f32;
+        let x = (self.screen_width as f32 - w) / 2.0;
+        let h = self.block_size * self.glass.height as f32;
+        let y = (self.screen_height as f32 - h) / 2.0;
+        graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h })?;
+        Ok(())
     }
 }
 
@@ -64,7 +79,9 @@ impl EventHandler for MainState {
                          DrawMode::Line(8.0),
                          Point2::new(self.x, self.y),
                          100.0,
-                         2.0)?;
+                         0.10)?;
+
+        self.draw_glass(ctx);
 
         graphics::present(ctx);
         timer::yield_now();

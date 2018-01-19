@@ -3,8 +3,8 @@ use figures::Figure;
 use figures::FigureMap;
 
 pub struct Glass {
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
     map: Vec<bool>,
     figure: Option<FigureInGlass>,
 }
