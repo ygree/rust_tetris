@@ -9,6 +9,8 @@ pub enum Figure {
     Base,
     LeftZig,
     RightZig
+    //TODO add missing L-like figures
+    //TODO fix rotation
 }
 
 impl Figure {
