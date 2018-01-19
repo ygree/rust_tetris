@@ -1,4 +1,5 @@
 
+#[cfg(test)]
 extern crate quickcheck;
 
 #[derive(Debug, Clone)]
@@ -109,8 +110,8 @@ impl FigureMap {
     }
 }
 
-use quickcheck::Arbitrary;
-use quickcheck::Gen;
+use self::quickcheck::Arbitrary;
+use self::quickcheck::Gen;
 
 impl Arbitrary for Figure {
 

@@ -2,7 +2,7 @@
 use figures::Figure;
 use figures::FigureMap;
 
-struct Glass {
+pub struct Glass {
     width: usize,
     height: usize,
     map: Vec<bool>,
@@ -34,7 +34,7 @@ impl MoveDirection {
 }
 
 impl Glass {
-    fn new(width: usize, height: usize) -> Glass {
+    pub fn new(width: usize, height: usize) -> Glass {
         Glass {
             width,
             height,
@@ -90,7 +90,7 @@ impl Glass {
 
     fn relocate_figure(&mut self, direction: MoveDirection) -> bool {
         let orig_figure = self.figure.clone();
-        if let Some(FigureInGlass { mut figure, position }) = orig_figure {
+        if let Some(FigureInGlass { figure, position }) = orig_figure {
             let new_position = direction.change_pos(position);
             if self.fit_glass(&figure, new_position) {
                 self.figure = Some(FigureInGlass{figure, position: new_position});
