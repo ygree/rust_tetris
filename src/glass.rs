@@ -107,9 +107,7 @@ impl Glass {
     }
 
     pub fn freeze_figure(&mut self) {
-        println!("freeze_figure: {}", self.figure.is_some());
         if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
-            println!("freeze_figure at: {} {}", row, col);
 
             for figure_row in 0 .. figure.height() {
                 for figure_col in 0..figure.width() {
