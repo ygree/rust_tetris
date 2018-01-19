@@ -117,6 +117,7 @@ impl MainState {
 
 impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        self.glass.clean_filled_rows();
         while timer::check_update_time(ctx, 1) {
             if !self.glass.relocate_figure(MoveDirection::Down) {
                 self.glass.freeze_figure();

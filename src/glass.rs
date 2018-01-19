@@ -127,22 +127,35 @@ impl Glass {
                     }
                 }
             }
+        }
+    }
 
+    pub fn clean_filled_rows(&mut self) {
+        for row in (0 .. self.height).rev() {
+            loop {
+                let filled_up = (0..self.width).all(|col| {
+                    self[row][col]
+                });
 
+                if !filled_up { break }
+                else {
+                    for r in (0.. row).rev() { //TODO can be optimized
+                        for col in 0..self.width {
+                            self[r+1][col] = self[r][col];
+                        }
+                    }
+                }
+            }
         }
     }
 
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
-
+        let figure_map = figure.draw();
         let row = 0;
         let col = (self.width as isize - 4) / 2 - 1;
-
-        let figure_map = figure.draw();
-
         !self.place(figure_map, (row, col))
     }
-
 }
 
 impl Rand for Figure {
