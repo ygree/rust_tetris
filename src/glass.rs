@@ -15,7 +15,7 @@ pub struct FigureInGlass {
     pub position: (isize, isize),
 }
 
-enum MoveDirection {
+pub enum MoveDirection {
     Left,
     Right,
     Down
@@ -63,12 +63,13 @@ impl Glass {
                 let glass_col = col + figure_col as isize;
 
                 let is_outsize_glass =
-                    glass_row < 0 || glass_row > self.width as isize ||
-                    glass_col < 0 || glass_col > self.height as isize;
+                    glass_row < 0 || glass_row >= self.height as isize ||
+                    glass_col < 0 || glass_col >= self.width as isize;
 
                 let has_value = fmap[figure_row][figure_col];
 
                 if has_value {
+                    println!("is_outsize_glass {}", is_outsize_glass);
                     if is_outsize_glass || self[glass_row as usize][glass_col as usize] {
                         return false;
                     }
@@ -78,7 +79,7 @@ impl Glass {
         true
     }
 
-    fn rotate_figure(&mut self) -> bool {
+    pub fn rotate_figure(&mut self) -> bool {
         let orig_figure = self.figure.clone();
         if let Some(FigureInGlass { mut figure, position }) = orig_figure {
             figure.rotate();
@@ -90,7 +91,7 @@ impl Glass {
         false
     }
 
-    fn relocate_figure(&mut self, direction: MoveDirection) -> bool {
+    pub fn relocate_figure(&mut self, direction: MoveDirection) -> bool {
         let orig_figure = self.figure.clone();
         if let Some(FigureInGlass { figure, position }) = orig_figure {
             let new_position = direction.change_pos(position);

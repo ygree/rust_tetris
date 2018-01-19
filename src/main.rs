@@ -21,6 +21,7 @@ use ggez::nalgebra as na;
 use glass::Glass;
 
 use figures::Figure;
+use glass::MoveDirection;
 
 mod figures;
 mod glass;
@@ -28,10 +29,6 @@ mod glass;
 struct MainState {
     screen_width: u32,
     screen_height: u32,
-    x: f32,
-    y: f32,
-    dx: f32,
-    dy: f32,
     glass: Glass,
     block_size: f32
 }
@@ -54,10 +51,6 @@ impl MainState {
         Ok(MainState {
             screen_width,
             screen_height,
-            x: screen_width as f32 / 2.0,
-            y: screen_height as f32 / 2.0,
-            dx: 0.0,
-            dy: 0.0,
             glass,
             block_size,
         })
@@ -68,7 +61,7 @@ impl MainState {
         let x = self.glass_x();
         let h = self.glass_height();
         let y = self.glass_y();
-        graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h })?;
+        graphics::rectangle(ctx, DrawMode::Line(1.58), Rect { x, y, w, h })?;
         Ok(())
     }
 
@@ -100,7 +93,7 @@ impl MainState {
                     let x = self.glass_x() + (f_col as f32 + col as f32) * w;
                     let y = self.glass_y() + (f_row as f32 + row as f32) * w;
 
-                    graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
+                    graphics::rectangle(ctx, DrawMode::Line(1.35), Rect { x, y, w, h: w })?;
                 }
             }
         }
@@ -110,23 +103,16 @@ impl MainState {
 
 impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.x += self.dx;
-        self.y += self.dy;
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
+
         graphics::set_color(ctx, (135, 55, 5, 255).into());
-
-        graphics::circle(ctx,
-                         DrawMode::Line(8.0),
-                         Point2::new(self.x, self.y),
-                         100.0,
-                         0.10)?;
-
         self.draw_glass(ctx);
 
+        graphics::set_color(ctx, (133, 123, 55, 128).into());
         self.draw_figure(ctx);
 
         graphics::present(ctx);
@@ -139,10 +125,15 @@ impl EventHandler for MainState {
             return;
         }
         match keycode {
-            Keycode::Right => self.dx += 10.0,
-            Keycode::Left => self.dx -= 10.0,
-            Keycode::Up => self.dy -= 10.0,
-            Keycode::Down => self.dy += 10.0,
+            Keycode::Right => {
+                self.glass.relocate_figure(MoveDirection::Right);
+            },
+            Keycode::Left => {
+                self.glass.relocate_figure(MoveDirection::Left);
+            },
+            Keycode::Up => {
+                self.glass.rotate_figure();
+            },
             _ => {}
         }
     }
@@ -151,10 +142,6 @@ impl EventHandler for MainState {
             return;
         }
         match keycode {
-            Keycode::Right => self.dx -= 10.0,
-            Keycode::Left => self.dx += 10.0,
-            Keycode::Up => self.dy += 10.0,
-            Keycode::Down => self.dy -= 10.0,
             _ => {}
         }
     }
