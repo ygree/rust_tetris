@@ -38,22 +38,19 @@ impl MainState {
         ctx.print_resource_stats();
         graphics::set_background_color(ctx, (33, 55, 122, 255).into());
         let mut glass = Glass::new(12, 26);
-        let figure = Figure::LeftZig;
-        let figure_map = figure.draw();
-
-        let row = 0;
-        let col = (glass.width as isize - 4) / 2 - 1;
-        glass.place(figure_map, (row, col));
+        glass.next_figure();
 
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
         let block_size = screen_height as f32 * 3.0/4.0 / glass.height as f32;
-        Ok(MainState {
+        let mut main_state = MainState {
             screen_width,
             screen_height,
             glass,
             block_size,
-        })
+        };
+
+        Ok(main_state)
     }
 
     fn draw_glass(&self, ctx: &mut Context) -> GameResult<()> {
@@ -103,6 +100,12 @@ impl MainState {
 
 impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        while timer::check_update_time(ctx, 1) {
+            if !self.glass.relocate_figure(MoveDirection::Down) {
+                self.glass.freeze_figure();
+                self.glass.next_figure();
+            }
+        }
         Ok(())
     }
 
@@ -122,7 +125,7 @@ impl EventHandler for MainState {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
         if repeat {
-            return;
+//            return;
         }
         match keycode {
             Keycode::Right => {
@@ -133,6 +136,11 @@ impl EventHandler for MainState {
             },
             Keycode::Up => {
                 self.glass.rotate_figure();
+            },
+            Keycode::Down => {
+                while self.glass.relocate_figure(MoveDirection::Down) {
+
+                }
             },
             _ => {}
         }

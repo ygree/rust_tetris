@@ -2,7 +2,7 @@
 #[cfg(test)]
 extern crate quickcheck;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Figure {
     Cube,
     Line,

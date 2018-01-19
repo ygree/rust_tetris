@@ -1,6 +1,10 @@
 
+extern crate rand;
+
 use figures::Figure;
 use figures::FigureMap;
+use self::rand::Rand;
+use self::rand::Rng;
 
 pub struct Glass {
     pub width: usize,
@@ -103,7 +107,7 @@ impl Glass {
         false
     }
 
-    fn freeze_figure(&mut self) {
+    pub fn freeze_figure(&mut self) {
         if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
 
             for figure_row in 0 .. figure.height() {
@@ -125,6 +129,27 @@ impl Glass {
 
 
         }
+    }
+
+    pub fn next_figure(&mut self) -> bool {
+        let figure = rand::random::<Figure>();
+
+//        let figure = Figure::LeftZig; //TODO: random
+        let row = 0;
+        let col = (self.width as isize - 4) / 2 - 1;
+
+        let figure_map = figure.draw();
+
+        !self.place(figure_map, (row, col))
+    }
+
+}
+
+impl Rand for Figure {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        use self::Figure::*;
+        let values = [Cube, Line, Base, LeftZig, RightZig];
+        *rng.choose(&values).unwrap()
     }
 }
 
