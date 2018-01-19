@@ -90,7 +90,24 @@ impl MainState {
                     let x = self.glass_x() + (f_col as f32 + col as f32) * w;
                     let y = self.glass_y() + (f_row as f32 + row as f32) * w;
 
-                    graphics::rectangle(ctx, DrawMode::Line(1.35), Rect { x, y, w, h: w })?;
+                    graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
+                    graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn draw_content(&self, ctx: &mut Context) -> GameResult<()> {
+        let w = self.block_size;
+        let x0 = self.glass_x();
+        let y0 = self.glass_y();
+        for row in 0 .. self.glass.height {
+            for col in 0 .. self.glass.width {
+                if self.glass[row][col] {
+                    let x = x0 + col as f32 * w;
+                    let y = y0 + row as f32 * w;
+                    graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
                 }
             }
         }
@@ -112,10 +129,13 @@ impl EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
+        graphics::set_color(ctx, (133, 123, 55, 255).into());
+        self.draw_content(ctx);
+
         graphics::set_color(ctx, (135, 55, 5, 255).into());
         self.draw_glass(ctx);
 
-        graphics::set_color(ctx, (133, 123, 55, 128).into());
+        graphics::set_color(ctx, (133, 123, 55, 64).into());
         self.draw_figure(ctx);
 
         graphics::present(ctx);
@@ -138,9 +158,7 @@ impl EventHandler for MainState {
                 self.glass.rotate_figure();
             },
             Keycode::Down => {
-                while self.glass.relocate_figure(MoveDirection::Down) {
-
-                }
+                while self.glass.relocate_figure(MoveDirection::Down) {}
             },
             _ => {}
         }

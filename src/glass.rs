@@ -73,7 +73,6 @@ impl Glass {
                 let has_value = fmap[figure_row][figure_col];
 
                 if has_value {
-                    println!("is_outsize_glass {}", is_outsize_glass);
                     if is_outsize_glass || self[glass_row as usize][glass_col as usize] {
                         return false;
                     }
@@ -108,7 +107,9 @@ impl Glass {
     }
 
     pub fn freeze_figure(&mut self) {
+        println!("freeze_figure: {}", self.figure.is_some());
         if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
+            println!("freeze_figure at: {} {}", row, col);
 
             for figure_row in 0 .. figure.height() {
                 for figure_col in 0..figure.width() {
@@ -116,8 +117,8 @@ impl Glass {
                     let glass_col = col + figure_col as isize;
 
                     let is_outsize_glass =
-                        glass_row < 0 || glass_row > self.width as isize ||
-                            glass_col < 0 || glass_col > self.height as isize;
+                        glass_row < 0 || glass_row > self.height as isize || //TODO duplicates see fit_glass
+                        glass_col < 0 || glass_col > self.width as isize;
 
                     let has_value = figure[figure_row][figure_col];
 
@@ -134,7 +135,6 @@ impl Glass {
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
 
-//        let figure = Figure::LeftZig; //TODO: random
         let row = 0;
         let col = (self.width as isize - 4) / 2 - 1;
 
