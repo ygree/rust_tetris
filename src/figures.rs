@@ -110,20 +110,20 @@ impl FigureMap {
     }
 }
 
-use self::quickcheck::Arbitrary;
-use self::quickcheck::Gen;
-
-impl Arbitrary for Figure {
-
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        use self::Figure::*;
-        g.choose(&[Cube, Line, Base, LeftZig, RightZig]).unwrap().clone()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use quickcheck::Arbitrary;
+    use quickcheck::Gen;
+
+    impl Arbitrary for Figure {
+
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            use self::Figure::*;
+            g.choose(&[Cube, Line, Base, LeftZig, RightZig]).unwrap().clone()
+        }
+    }
 
     quickcheck! {
 
