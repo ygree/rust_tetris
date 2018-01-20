@@ -8,9 +8,9 @@ pub enum Figure {
     Line,
     Base,
     LeftZig,
-    RightZig
-    //TODO add missing L-like figures
-    //TODO fix rotation
+    RightZig,
+    RightL,
+    LeftL
 }
 
 impl Figure {
@@ -48,6 +48,18 @@ impl Figure {
                 O, O, O, O,
                 O, X, X, O,
                 X, X, O, O,
+                O, O, O, O,
+            ]),
+            RightL => FigureMap([
+                O, X, O, O,
+                O, X, O, O,
+                O, X, X, O,
+                O, O, O, O,
+            ]),
+            LeftL => FigureMap([
+                O, O, X, O,
+                O, O, X, O,
+                O, X, X, O,
                 O, O, O, O,
             ]),
         }
@@ -128,6 +140,55 @@ impl FigureMap {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct Point {
+    x: i32,
+    y: i32
+}
+
+/// FigureRepr is a replacement candidate for Figure and FigureMap all together
+pub struct FigureRepr {
+    /// block coordinates relatively to rotation center
+    blocks: [Point;4]
+}
+
+impl FigureRepr {
+
+    /// create figure out of visual map and normalize its coordinates relatively to its center of mass
+    ///
+    /// TODO: (it can be a macros)
+    fn new(figure_map: &FigureMap) -> FigureRepr {
+        let mut blocks = [Point { x: 0, y: 0 }; 4];
+        let mut i = 0;
+
+        let (row, col) = figure_map.center_of_mass();
+        let (x0, y0) = (col.round() as i32, row.round() as i32);
+
+        'main:
+        for row in 0 .. 4 {
+            for col in 0 .. 4 {
+                if figure_map[row][col] {
+                    blocks[i] = Point { x: col as i32 - x0, y: row as i32 - y0 };
+                    i += 1;
+                    if i == 4 {
+                        break 'main;
+                    }
+                }
+            }
+        }
+
+        if i != 4 {
+            panic!("Not enough points to construct FigureRepr. It need to be exactly 4, but provided: {}", i);
+        }
+
+        FigureRepr {
+            blocks
+        }
+    }
+
+    //TODO: rotate figure repr relatively to its center
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,7 +200,7 @@ mod tests {
 
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             use self::Figure::*;
-            g.choose(&[Cube, Line, Base, LeftZig, RightZig]).unwrap().clone()
+            g.choose(&[Cube, Line, Base, LeftZig, RightZig, LeftL, RightL]).unwrap().clone()
         }
     }
 
@@ -164,5 +225,29 @@ mod tests {
 
             0.0 <= row && row < 4.0 && 0.0 <= col && col < 4.0
         }
+
+        fn figure_repr_has_only_one_center(f: Figure) -> bool {
+            let figure_map = f.draw();
+            let figure_repr = FigureRepr::new(&figure_map);
+
+            figure_repr.blocks.iter().filter(|b| { b.x == 0 && b.y == 0 }).count() == 1
+        }
+
+        // check that FigureRepr center of mass is (0,0)
+//        fn figure_repr_normalized(f: Figure) -> bool {
+//            let figure_map = f.draw();
+//            let figure_repr = FigureRepr::new(&figure_map);
+//
+//            let mut x = 0;
+//            let mut y = 0;
+//
+//            for p in figure_repr.blocks.iter() {
+//                x += p.x;
+//                y += p.y;
+//            }
+//
+//            println!("{:?} center: {} {} : {:?}", f, x, y, &figure_repr.blocks);
+//            x == 0 && y == 0
+//        }
     }
 }
