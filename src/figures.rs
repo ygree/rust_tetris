@@ -93,6 +93,22 @@ impl FigureMap {
         self.0.swap(p(r1,c1), p(r2,c2));
     }
 
+    fn center_of_mass(&self) -> (f32, f32) {
+        let mut sum_row = 0;
+        let mut sum_col = 0;
+        let mut count = 0;
+        for row in 0 .. 4 {
+            for col in 0 .. 4 {
+                if self[row][col] {
+                    sum_row += row;
+                    sum_col += col;
+                    count += 1;
+                }
+            }
+        }
+        (sum_row as f32 / count as f32, sum_col as f32 / count as f32)
+    }
+
     pub fn rotate(&mut self) {
         self.swap((0,0), (3,0));
         self.swap((0,0), (0,3));
@@ -139,6 +155,14 @@ mod tests {
             rotated.rotate();
 
             drawn == rotated
+        }
+
+        fn center_of_mass_exist(f: Figure) -> bool {
+            let figure_map = f.draw();
+
+            let (row, col) = figure_map.center_of_mass();
+
+            0.0 <= row && row < 4.0 && 0.0 <= col && col < 4.0
         }
     }
 }
