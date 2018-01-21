@@ -192,9 +192,6 @@ impl FigureRepr {
         let dx = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 }) / 4.0;
         let dy = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 }) / 4.0;
 
-        println!("dx,dy) {:?},{:?}", dx, dy);
-        println!("orig) {:?}", self.blocks);
-
         let mut f_blocks = [Point { x: 0.0, y: 0.0 }; 4];
 
         for (org, mut norm) in self.blocks.iter().zip(f_blocks.iter_mut()) {
@@ -204,8 +201,6 @@ impl FigureRepr {
             }
         }
 
-        println!("normilized) {:?}", f_blocks);
-
         // rotate
         for &mut Point { ref mut x, ref mut y } in f_blocks.iter_mut() {
             let new_x = -*y;
@@ -214,22 +209,17 @@ impl FigureRepr {
             *y = new_y;
         }
 
-        println!("rotated) {:?}", f_blocks);
-
         // de-normalize move back from center of mass to origin position by applying rotated shift
         for &mut Point { ref mut x, ref mut y } in f_blocks.iter_mut() {
             *x += -dy;
             *y += dx;
         }
 
-        println!("de-normalized) {:?}", f_blocks);
-
         // modify origin coordinates by rounding float point result
         for (&mut Point {ref mut x, ref mut y}, &Point {x: fx, y: fy}) in self.blocks.iter_mut().zip(f_blocks.iter()) {
             *x = fx.round() as i32;
             *y = fy.round() as i32;
         }
-        println!("rounded) {:?}", self.blocks);
     }
 }
 

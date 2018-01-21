@@ -36,7 +36,6 @@ impl MainState {
         graphics::set_background_color(ctx, (33, 55, 122, 255).into());
         let mut glass = Glass::new(12, 26);
         glass.next_figure();
-        println!("----------: {:?}", glass.figure.unwrap().figure);
 
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
