@@ -2,7 +2,8 @@
 extern crate rand;
 
 use figures::Figure;
-use figures::FigureMap;
+use figures::FigureRepr;
+use figures::Point;
 use self::rand::Rand;
 use self::rand::Rng;
 
@@ -15,7 +16,7 @@ pub struct Glass {
 
 #[derive(Copy, Clone)]
 pub struct FigureInGlass {
-    pub figure: FigureMap,
+    pub figure: FigureRepr,
     pub position: (isize, isize),
 }
 
@@ -47,7 +48,7 @@ impl Glass {
         }
     }
 
-    pub fn place(&mut self, fmap: FigureMap, (row, col): (isize, isize)) -> bool {
+    pub fn place(&mut self, fmap: FigureRepr, (row, col): (isize, isize)) -> bool {
         if !self.fit_glass(&fmap, (row, col)) { false }
         else {
             self.figure = Some(FigureInGlass {
@@ -59,24 +60,20 @@ impl Glass {
     }
 
     /// (row, col) - position in the glass. 0 row is the upper row.
-    fn fit_glass(&self, fmap: &FigureMap, (row, col): (isize, isize)) -> bool {
+    fn fit_glass(&self, fmap: &FigureRepr, (row, col): (isize, isize)) -> bool {
 
-        for figure_row in 0 .. fmap.height() {
-            for figure_col in 0 .. fmap.width() {
-                let glass_row = row + figure_row as isize;
-                let glass_col = col + figure_col as isize;
+        for &Point { x, y } in fmap.blocks.iter() {
+            let glass_row = row + y as isize;
+            let glass_col = col + x as isize;
 
-                let is_outsize_glass =
-                    glass_row < 0 || glass_row >= self.height as isize ||
+            let is_outsize_glass =
+                glass_row < 0 || glass_row >= self.height as isize ||
                     glass_col < 0 || glass_col >= self.width as isize;
 
-                let has_value = fmap[figure_row][figure_col];
+            let taken = || { self[glass_row as usize][glass_col as usize] };
 
-                if has_value {
-                    if is_outsize_glass || self[glass_row as usize][glass_col as usize] {
-                        return false;
-                    }
-                }
+            if is_outsize_glass || taken() {
+                return false;
             }
         }
         true
@@ -108,21 +105,16 @@ impl Glass {
 
     pub fn freeze_figure(&mut self) {
         if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
+            for &Point { x, y } in figure.blocks.iter() {
+                let glass_row = row + y as isize;
+                let glass_col = col + x as isize;
 
-            for figure_row in 0 .. figure.height() {
-                for figure_col in 0..figure.width() {
-                    let glass_row = row + figure_row as isize;
-                    let glass_col = col + figure_col as isize;
+                let is_outsize_glass =
+                    glass_row < 0 || glass_row > self.height as isize || //TODO duplicates see fit_glass
+                    glass_col < 0 || glass_col > self.width as isize;
 
-                    let is_outsize_glass =
-                        glass_row < 0 || glass_row > self.height as isize || //TODO duplicates see fit_glass
-                        glass_col < 0 || glass_col > self.width as isize;
-
-                    let has_value = figure[figure_row][figure_col];
-
-                    if has_value && !is_outsize_glass {
-                        self[glass_row as usize][glass_col as usize] = true;
-                    }
+                if !is_outsize_glass {
+                    self[glass_row as usize][glass_col as usize] = true;
                 }
             }
         }
@@ -149,10 +141,12 @@ impl Glass {
 
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
-        let figure_map = figure.draw();
-        let row = 0;
-        let col = (self.width as isize - 4) / 2 - 1;
-        !self.place(figure_map, (row, col))
+        println!("NEW ---------- {:?}", figure);
+        let figure_repr = FigureRepr::new(&figure.draw());
+        println!("NEW repr ---------- {:?}", figure_repr.blocks);
+        let row = 2;
+        let col = self.width as isize / 2;
+        !self.place(figure_repr, (row, col))
     }
 }
 

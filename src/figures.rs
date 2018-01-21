@@ -142,15 +142,15 @@ impl FigureMap {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Point<T> {
-    x: T,
-    y: T
+    pub x: T,
+    pub y: T
 }
 
 /// FigureRepr is a replacement candidate for Figure and FigureMap all together
 #[derive(Clone, Copy, Debug)]
 pub struct FigureRepr {
     /// block coordinates relatively to rotation center
-    blocks: [Point<i32>;4]
+    pub blocks: [Point<i32>;4]
 }
 
 impl FigureRepr {
@@ -158,7 +158,7 @@ impl FigureRepr {
     /// create figure out of visual map and normalize its coordinates relatively to its center of mass
     ///
     /// TODO: (it can be a macro)
-    fn new(figure_map: &FigureMap) -> Self {
+    pub fn new(figure_map: &FigureMap) -> Self {
         let mut blocks = [Point { x: 0, y: 0 }; 4];
         let mut i = 0;
 
@@ -187,15 +187,16 @@ impl FigureRepr {
         }
     }
 
-    fn rotate(&mut self) {
+    pub fn rotate(&mut self) {
         // find center of mass for rotation
-        let dx = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 });
-        let dy = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 });
+        let dx = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 }) / 4.0;
+        let dy = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 }) / 4.0;
+
+        println!("dx,dy) {:?},{:?}", dx, dy);
+        println!("orig) {:?}", self.blocks);
 
         let mut f_blocks = [Point { x: 0.0, y: 0.0 }; 4];
 
-        // TODO use pattern matching
-        // normalize relatively of center of mass
         for (org, mut norm) in self.blocks.iter().zip(f_blocks.iter_mut()) {
             *norm = Point {
                 x: org.x as f32 - dx,
@@ -203,25 +204,32 @@ impl FigureRepr {
             }
         }
 
+        println!("normilized) {:?}", f_blocks);
+
         // rotate
-        for &mut Point { mut x, mut y } in f_blocks.iter_mut() {
-            let new_x = -y;
-            let new_y = x;
-            x = new_x;
-            y = new_y;
+        for &mut Point { ref mut x, ref mut y } in f_blocks.iter_mut() {
+            let new_x = -*y;
+            let new_y = *x;
+            *x = new_x;
+            *y = new_y;
         }
 
-        // de-normalize move back from center of mass to origin position
-        for &mut Point { mut x, mut y } in f_blocks.iter_mut() {
-            x += dx;
-            y += dy;
+        println!("rotated) {:?}", f_blocks);
+
+        // de-normalize move back from center of mass to origin position by applying rotated shift
+        for &mut Point { ref mut x, ref mut y } in f_blocks.iter_mut() {
+            *x += -dy;
+            *y += dx;
         }
+
+        println!("de-normalized) {:?}", f_blocks);
 
         // modify origin coordinates by rounding float point result
-        for (&mut Point {mut x, mut y}, &Point {x: fx, y: fy}) in self.blocks.iter_mut().zip(f_blocks.iter()) {
-            x = fx.round() as i32;
-            y = fy.round() as i32;
+        for (&mut Point {ref mut x, ref mut y}, &Point {x: fx, y: fy}) in self.blocks.iter_mut().zip(f_blocks.iter()) {
+            *x = fx.round() as i32;
+            *y = fy.round() as i32;
         }
+        println!("rounded) {:?}", self.blocks);
     }
 }
 

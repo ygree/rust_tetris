@@ -12,15 +12,12 @@ use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics;
 use ggez::graphics::{DrawMode, Point2, Rect};
 use ggez::timer;
-//use ggez::graphics::{Vector2, Point2};
 use ggez::nalgebra as na;
-
-//use std::env;
-//use std::path;
 
 use glass::Glass;
 
 use figures::Figure;
+use figures::Point;
 use glass::MoveDirection;
 
 mod figures;
@@ -39,6 +36,7 @@ impl MainState {
         graphics::set_background_color(ctx, (33, 55, 122, 255).into());
         let mut glass = Glass::new(12, 26);
         glass.next_figure();
+        println!("----------: {:?}", glass.figure.unwrap().figure);
 
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
@@ -82,18 +80,15 @@ impl MainState {
 
     fn draw_figure(&self, ctx: &mut Context) -> GameResult<()> {
         let figure = self.glass.figure.unwrap(); //TODO: FIX!
-        for row in 0..4 {
-            for col in 0..4 {
-                if figure.figure[row][col] {
-                    let w = self.block_size;
-                    let (f_row, f_col) = figure.position;
-                    let x = self.glass_x() + (f_col as f32 + col as f32) * w;
-                    let y = self.glass_y() + (f_row as f32 + row as f32) * w;
 
-                    graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
-                    graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
-                }
-            }
+        for &Point { x: col, y: row } in figure.figure.blocks.iter() {
+            let w = self.block_size;
+            let (f_row, f_col) = figure.position;
+            let x = self.glass_x() + (f_col as f32 + col as f32) * w;
+            let y = self.glass_y() + (f_row as f32 + row as f32) * w;
+
+            graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
+            graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
         }
         Ok(())
     }
@@ -177,8 +172,6 @@ impl EventHandler for MainState {
 
 fn main() {
     println!("Tetris!");
-
-//    let glass = Glass::new(15, 30);
 
     let mut cb = ContextBuilder::new("tetris", "ygree")
         .window_setup(conf::WindowSetup::default()
