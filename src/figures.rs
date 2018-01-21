@@ -225,6 +225,20 @@ impl FigureRepr {
     }
 }
 
+extern crate rand;
+
+use self::rand::Rand;
+use self::rand::Rng;
+
+impl Rand for Figure {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        use self::Figure::*;
+        let values = [Cube, Line, Base, LeftZig, RightZig, LeftL, RightL];
+        *rng.choose(&values).unwrap()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

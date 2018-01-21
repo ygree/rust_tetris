@@ -156,14 +156,6 @@ impl Glass {
     }
 }
 
-impl Rand for Figure {
-    fn rand<R: Rng>(rng: &mut R) -> Self {
-        use self::Figure::*;
-        let values = [Cube, Line, Base, LeftZig, RightZig];
-        *rng.choose(&values).unwrap()
-    }
-}
-
 
 impl ::std::ops::Index<usize> for Glass {
     type Output = [bool];
