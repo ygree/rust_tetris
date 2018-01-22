@@ -70,73 +70,12 @@ impl Figure {
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub struct FigureMap([bool; 16]);
 
-impl FigureMap {
-    pub fn height(&self) -> usize {
-        4
-    }
-
-    pub fn width(&self) -> usize {
-        4
-    }
-}
-
 impl ::std::ops::Index<usize> for FigureMap {
     type Output = [bool];
 
     fn index(&self, row: usize) -> &Self::Output {
         let start = row * 4;
         &self.0[start .. start + 4]
-    }
-}
-
-impl ::std::ops::IndexMut<usize> for FigureMap {
-    fn index_mut(&mut self, row: usize) -> &mut Self::Output {
-        let start = row * 4;
-        &mut self.0[start .. start + 4]
-    }
-}
-
-impl FigureMap {
-
-    fn swap(&mut self, (r1, c1): (usize, usize), (r2, c2): (usize, usize) ) {
-        fn p(row: usize, column: usize) -> usize {
-            row + 4*column
-        }
-        self.0.swap(p(r1,c1), p(r2,c2));
-    }
-
-    fn center_of_mass(&self) -> (f32, f32) {
-        let mut sum_row = 0;
-        let mut sum_col = 0;
-        let mut count = 0;
-        for row in 0 .. 4 {
-            for col in 0 .. 4 {
-                if self[row][col] {
-                    sum_row += row;
-                    sum_col += col;
-                    count += 1;
-                }
-            }
-        }
-        (sum_row as f32 / count as f32, sum_col as f32 / count as f32)
-    }
-
-    pub fn rotate(&mut self) {
-        self.swap((0,0), (3,0));
-        self.swap((0,0), (0,3));
-        self.swap((0,3), (3,3));
-
-        self.swap((0,1), (2,0));
-        self.swap((0,1), (1,3));
-        self.swap((1,3), (3,2));
-
-        self.swap((0,2), (1,0));
-        self.swap((0,2), (2,3));
-        self.swap((2,3), (3,1));
-
-        self.swap((1,1), (2,1));
-        self.swap((1,1), (1,2));
-        self.swap((1,2), (2,2));
     }
 }
 
@@ -163,8 +102,6 @@ impl FigureRepr {
         let mut blocks = [Point { x: 0, y: 0 }; 4];
         let mut i = 0;
 
-        let (x0, y0) = (0, 0);
-
         'main:
         for row in 0 .. 4 {
             for col in 0 .. 4 {
@@ -183,8 +120,8 @@ impl FigureRepr {
         }
 
         let center = Point {
-            x: blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 }) / 4.0,
-            y: blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 }) / 4.0
+            x: blocks.iter().fold(0.0, |sum, &Point { x, .. }| { sum + x as f32 }) / 4.0,
+            y: blocks.iter().fold(0.0, |sum, &Point { y, .. }| { sum + y as f32 }) / 4.0
         };
 
         FigureRepr {
@@ -265,33 +202,6 @@ mod tests {
 //    }
 
     quickcheck! {
-
-        fn four_rotations(f: Figure) -> bool {
-            let drawn = f.draw();
-            let mut rotated = drawn.clone();
-
-            rotated.rotate();
-            rotated.rotate();
-            rotated.rotate();
-            rotated.rotate();
-
-            drawn == rotated
-        }
-
-        fn center_of_mass_exist(f: Figure) -> bool {
-            let figure_map = f.draw();
-
-            let (row, col) = figure_map.center_of_mass();
-
-            0.0 <= row && row < 4.0 && 0.0 <= col && col < 4.0
-        }
-
-        fn figure_repr_has_only_one_center(f: Figure) -> bool {
-            let figure_map = f.draw();
-            let figure_repr = FigureRepr::new(&figure_map);
-
-            figure_repr.blocks.iter().filter(|b| { b.x == 0 && b.y == 0 }).count() == 1
-        }
 
         fn four_repr_rotations(f: Figure) -> bool {
             let orig = FigureRepr::new(&f.draw());

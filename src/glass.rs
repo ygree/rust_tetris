@@ -4,8 +4,8 @@ extern crate rand;
 use figures::Figure;
 use figures::FigureRepr;
 use figures::Point;
-use self::rand::Rand;
-use self::rand::Rng;
+//use self::rand::Rand;
+//use self::rand::Rng;
 
 pub struct Glass {
     pub width: usize,
@@ -142,8 +142,8 @@ impl Glass {
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
         let figure_repr = FigureRepr::new(&figure.draw());
-        let row = 2;
-        let col = self.width as isize / 2;
+        let row = 0;
+        let col = (self.width as isize - 4) / 2;
         !self.place(figure_repr, (row, col))
     }
 }

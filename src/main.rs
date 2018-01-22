@@ -10,13 +10,13 @@ use ggez::conf;
 use ggez::event::*;
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics;
-use ggez::graphics::{DrawMode, Point2, Rect};
+use ggez::graphics::{DrawMode, Rect};
 use ggez::timer;
-use ggez::nalgebra as na;
+//use ggez::nalgebra as na;
 
 use glass::Glass;
 
-use figures::Figure;
+//use figures::Figure;
 use figures::Point;
 use glass::MoveDirection;
 
@@ -40,7 +40,7 @@ impl MainState {
         let screen_width = ctx.conf.window_mode.width;
         let screen_height = ctx.conf.window_mode.height;
         let block_size = screen_height as f32 * 3.0/4.0 / glass.height as f32;
-        let mut main_state = MainState {
+        let main_state = MainState {
             screen_width,
             screen_height,
             glass,
@@ -78,20 +78,18 @@ impl MainState {
     }
 
     fn draw_figure(&self, ctx: &mut Context) -> GameResult<()> {
-        if self.glass.figure.is_none() {
-            return Ok(())
-        }
+        if self.glass.figure.is_some() {
+            let figure = self.glass.figure.unwrap(); //TODO: FIX!
 
-        let figure = self.glass.figure.unwrap(); //TODO: FIX!
+            for &Point { x: col, y: row } in figure.figure.blocks.iter() {
+                let w = self.block_size;
+                let (f_row, f_col) = figure.position;
+                let x = self.glass_x() + (f_col as f32 + col as f32) * w;
+                let y = self.glass_y() + (f_row as f32 + row as f32) * w;
 
-        for &Point { x: col, y: row } in figure.figure.blocks.iter() {
-            let w = self.block_size;
-            let (f_row, f_col) = figure.position;
-            let x = self.glass_x() + (f_col as f32 + col as f32) * w;
-            let y = self.glass_y() + (f_row as f32 + row as f32) * w;
-
-            graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
-            graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
+                graphics::rectangle(ctx, DrawMode::Fill, Rect { x, y, w, h: w })?;
+                graphics::rectangle(ctx, DrawMode::Line(1.0), Rect { x, y, w, h: w })?;
+            }
         }
         Ok(())
     }
@@ -117,10 +115,10 @@ impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.glass.clean_filled_rows();
         while timer::check_update_time(ctx, 1) {
-//            if !self.glass.relocate_figure(MoveDirection::Down) {
-//                self.glass.freeze_figure();
-//                self.glass.next_figure();
-//            }
+            if !self.glass.relocate_figure(MoveDirection::Down) {
+                self.glass.freeze_figure();
+                self.glass.next_figure();
+            }
         }
         Ok(())
     }
@@ -128,21 +126,21 @@ impl EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
-        graphics::set_color(ctx, (133, 123, 55, 255).into());
-        self.draw_content(ctx);
+        graphics::set_color(ctx, (133, 123, 55, 255).into())?;
+        self.draw_content(ctx)?;
 
-        graphics::set_color(ctx, (135, 55, 5, 255).into());
-        self.draw_glass(ctx);
+        graphics::set_color(ctx, (135, 55, 5, 255).into())?;
+        self.draw_glass(ctx)?;
 
-        graphics::set_color(ctx, (133, 123, 55, 64).into());
-        self.draw_figure(ctx);
+        graphics::set_color(ctx, (133, 123, 55, 64).into())?;
+        self.draw_figure(ctx)?;
 
         graphics::present(ctx);
         timer::yield_now();
         Ok(())
     }
 
-    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
+    fn key_down_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
         if repeat {
 //            return;
         }
@@ -159,8 +157,8 @@ impl EventHandler for MainState {
             Keycode::Down => {
                 while self.glass.relocate_figure(MoveDirection::Down) {
                 }
-                self.glass.freeze_figure();
-                self.glass.next_figure();
+//                self.glass.freeze_figure();
+//                self.glass.next_figure();
             },
             _ => {}
         }
@@ -179,7 +177,7 @@ impl EventHandler for MainState {
 fn main() {
     println!("Tetris!");
 
-    let mut cb = ContextBuilder::new("tetris", "ygree")
+    let cb = ContextBuilder::new("tetris", "ygree")
         .window_setup(conf::WindowSetup::default()
             .title("Tetris!")
         )
