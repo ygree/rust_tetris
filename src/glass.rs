@@ -164,3 +164,5 @@ impl ::std::ops::IndexMut<usize> for Glass {
         &mut self.map[start .. start + self.width]
     }
 }
+
+//TODO how to test Glass?

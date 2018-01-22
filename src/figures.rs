@@ -204,6 +204,7 @@ mod tests {
 
     quickcheck! {
 
+        /// four consecutive rotations bring figure to initial shape and its position
         fn four_repr_rotations(f: Figure) -> bool {
             let orig = FigureRepr::new(f);
 
