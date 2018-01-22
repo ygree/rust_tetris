@@ -78,6 +78,10 @@ impl MainState {
     }
 
     fn draw_figure(&self, ctx: &mut Context) -> GameResult<()> {
+        if self.glass.figure.is_none() {
+            return Ok(())
+        }
+
         let figure = self.glass.figure.unwrap(); //TODO: FIX!
 
         for &Point { x: col, y: row } in figure.figure.blocks.iter() {
@@ -113,10 +117,10 @@ impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.glass.clean_filled_rows();
         while timer::check_update_time(ctx, 1) {
-            if !self.glass.relocate_figure(MoveDirection::Down) {
-                self.glass.freeze_figure();
-                self.glass.next_figure();
-            }
+//            if !self.glass.relocate_figure(MoveDirection::Down) {
+//                self.glass.freeze_figure();
+//                self.glass.next_figure();
+//            }
         }
         Ok(())
     }
@@ -153,7 +157,10 @@ impl EventHandler for MainState {
                 self.glass.rotate_figure();
             },
             Keycode::Down => {
-                while self.glass.relocate_figure(MoveDirection::Down) {}
+                while self.glass.relocate_figure(MoveDirection::Down) {
+                }
+                self.glass.freeze_figure();
+                self.glass.next_figure();
             },
             _ => {}
         }

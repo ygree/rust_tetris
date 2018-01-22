@@ -150,7 +150,8 @@ pub struct Point<T> {
 #[derive(Clone, Copy, Debug)]
 pub struct FigureRepr {
     /// block coordinates relatively to rotation center
-    pub blocks: [Point<i32>;4]
+    pub blocks: [Point<i32>;4],
+    center: Point<f32>
 }
 
 impl FigureRepr {
@@ -162,14 +163,13 @@ impl FigureRepr {
         let mut blocks = [Point { x: 0, y: 0 }; 4];
         let mut i = 0;
 
-        let (row, col) = figure_map.center_of_mass();
-        let (x0, y0) = (col.round() as i32, row.round() as i32);
+        let (x0, y0) = (0, 0);
 
         'main:
         for row in 0 .. 4 {
             for col in 0 .. 4 {
                 if figure_map[row][col] {
-                    blocks[i] = Point { x: col as i32 - x0, y: row as i32 - y0 };
+                    blocks[i] = Point { x: col as i32, y: row as i32 };
                     i += 1;
                     if i == 4 {
                         break 'main;
@@ -182,15 +182,20 @@ impl FigureRepr {
             panic!("Not enough points to construct FigureRepr. It need to be exactly 4, but provided: {}", i);
         }
 
+        let center = Point {
+            x: blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 }) / 4.0,
+            y: blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 }) / 4.0
+        };
+
         FigureRepr {
-            blocks
+            blocks,
+            center
         }
     }
 
     pub fn rotate(&mut self) {
-        // find center of mass for rotation
-        let dx = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + x as f32 }) / 4.0;
-        let dy = self.blocks.iter().fold(0.0, |sum, &Point { x, y }| { sum + y as f32 }) / 4.0;
+        let dx = self.center.x;
+        let dy = self.center.y;
 
         let mut f_blocks = [Point { x: 0.0, y: 0.0 }; 4];
 
@@ -211,14 +216,14 @@ impl FigureRepr {
 
         // de-normalize move back from center of mass to origin position by applying rotated shift
         for &mut Point { ref mut x, ref mut y } in f_blocks.iter_mut() {
-            *x += -dy;
-            *y += dx;
+            *x += dx;
+            *y += dy;
         }
 
         // modify origin coordinates by rounding float point result
         for (&mut Point {ref mut x, ref mut y}, &Point {x: fx, y: fy}) in self.blocks.iter_mut().zip(f_blocks.iter()) {
-            *x = fx.round() as i32;
-            *y = fy.round() as i32;
+            *x = fx.ceil() as i32;
+            *y = fy.ceil() as i32;
         }
     }
 }
