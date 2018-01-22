@@ -182,7 +182,7 @@ fn main() {
             .title("Tetris!")
         )
         .window_mode(conf::WindowMode::default()
-            .dimensions(640, 480)
+            .dimensions(800, 600)
         );
 
     let ctx = &mut cb.build().unwrap();

@@ -141,7 +141,7 @@ impl Glass {
 
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
-        let figure_repr = FigureRepr::new(&figure.draw());
+        let figure_repr = FigureRepr::new(figure);
         let row = 0;
         let col = (self.width as isize - 4) / 2;
         !self.place(figure_repr, (row, col))

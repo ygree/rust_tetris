@@ -13,9 +13,13 @@ pub enum Figure {
     LeftL
 }
 
+// FigureMap exists only for easier way to represent figure shapes in code
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub struct FigureMap([bool; 16]);
+
 impl Figure {
 
-    pub fn draw(&self) -> FigureMap {
+    fn draw(&self) -> FigureMap {
         use self::Figure::*;
         const O: bool = false;
         const X: bool = true;
@@ -67,9 +71,6 @@ impl Figure {
 
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
-pub struct FigureMap([bool; 16]);
-
 impl ::std::ops::Index<usize> for FigureMap {
     type Output = [bool];
 
@@ -88,17 +89,17 @@ pub struct Point<T> {
 /// FigureRepr is a replacement candidate for Figure and FigureMap all together
 #[derive(Clone, Copy, Debug)]
 pub struct FigureRepr {
-    /// block coordinates relatively to rotation center
+    /// block coordinates
     pub blocks: [Point<i32>;4],
-    center: Point<f32>
+    center: Point<f32>,
 }
 
 impl FigureRepr {
 
     /// create figure out of visual map and normalize its coordinates relatively to its center of mass
     ///
-    /// TODO: (it can be a macro)
-    pub fn new(figure_map: &FigureMap) -> Self {
+    pub fn new(figure: Figure) -> Self {
+        let figure_map = figure.draw();
         let mut blocks = [Point { x: 0, y: 0 }; 4];
         let mut i = 0;
 
@@ -204,7 +205,7 @@ mod tests {
     quickcheck! {
 
         fn four_repr_rotations(f: Figure) -> bool {
-            let orig = FigureRepr::new(&f.draw());
+            let orig = FigureRepr::new(f);
 
             let mut repr = orig.clone();
 
