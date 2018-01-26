@@ -195,26 +195,26 @@ mod tests {
     use quickcheck::Gen;
 
     impl Arbitrary for Figure {
-
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            use self::Figure::*;
-            g.choose(&[Cube, Line, Base, LeftZig, RightZig, LeftL, RightL]).unwrap().clone()
+        fn arbitrary<G: Gen>(_g: &mut G) -> Self {
+            //TODO how to pass _g which also implements Rng which is a super trait to Gen?
+            //next doesn't compile
+            //Figure::rand(&mut _g);
+            Figure::rand(&mut rand::thread_rng())
         }
     }
 
-//    impl Arbitrary for FigureRepr {
-//
-//        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-//            //TODO generate figure and render it
-//        }
-//    }
+    impl Arbitrary for FigureRepr {
+
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let f: Figure = Arbitrary::arbitrary(g);
+            f.into()
+        }
+    }
 
     quickcheck! {
 
         /// four consecutive rotations bring figure to initial shape and its position
-        fn four_repr_rotations(f: Figure) -> bool {
-            let orig = FigureRepr::new(f);
-
+        fn four_repr_rotations(orig: FigureRepr) -> bool {
             let mut repr = orig.clone();
 
             repr.rotate();
