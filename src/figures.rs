@@ -13,100 +13,69 @@ pub enum Figure {
     LeftL
 }
 
-// FigureMap exists only for easier way to represent figure shapes in code
-#[derive(Clone, Copy, Eq, PartialEq)]
-pub struct FigureMap([bool; 16]);
-
-impl Figure {
-
-    fn draw(&self) -> FigureMap {
+impl From<Figure> for FigureRepr {
+    fn from(figure: Figure) -> Self {
         use self::Figure::*;
         const O: bool = false;
         const X: bool = true;
-        match *self {
-            Cube => FigureMap([
+        let array_repr = match figure {
+            Cube => [
                 O, O, O, O,
                 O, X, X, O,
                 O, X, X, O,
                 O, O, O, O,
-            ]),
-            Line => FigureMap([
+            ],
+            Line => [
                 O, O, O, O,
                 O, O, O, O,
                 X, X, X, X,
                 O, O, O, O,
-            ]),
-            Base => FigureMap([
+            ],
+            Base => [
                 O, O, O, O,
                 O, O, X, O,
                 O, X, X, X,
                 O, O, O, O,
-            ]),
-            LeftZig => FigureMap([
+            ],
+            LeftZig => [
                 O, O, O, O,
                 O, X, X, O,
                 O, O, X, X,
                 O, O, O, O,
-            ]),
-            RightZig => FigureMap([
+            ],
+            RightZig => [
                 O, O, O, O,
                 O, X, X, O,
                 X, X, O, O,
                 O, O, O, O,
-            ]),
-            RightL => FigureMap([
+            ],
+            RightL => [
                 O, X, O, O,
                 O, X, O, O,
                 O, X, X, O,
                 O, O, O, O,
-            ]),
-            LeftL => FigureMap([
+            ],
+            LeftL => [
                 O, O, X, O,
                 O, O, X, O,
                 O, X, X, O,
                 O, O, O, O,
-            ]),
-        }
-    }
-
-}
-
-impl ::std::ops::Index<usize> for FigureMap {
-    type Output = [bool];
-
-    fn index(&self, row: usize) -> &Self::Output {
-        let start = row * 4;
-        &self.0[start .. start + 4]
+            ],
+        };
+        array_repr.into()
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Point<T> {
-    pub x: T,
-    pub y: T
-}
+impl From<[bool;16]> for FigureRepr {
 
-/// FigureRepr is a replacement candidate for Figure and FigureMap all together
-#[derive(Clone, Copy, Debug)]
-pub struct FigureRepr {
-    /// block coordinates
-    pub blocks: [Point<i32>;4],
-    center: Point<f32>,
-}
-
-impl FigureRepr {
-
-    /// create figure out of visual map and normalize its coordinates relatively to its center of mass
-    ///
-    pub fn new(figure: Figure) -> Self {
-        let figure_map = figure.draw();
+    fn from(figure_map: [bool;16]) -> Self {
         let mut blocks = [Point { x: 0, y: 0 }; 4];
         let mut i = 0;
 
         'main:
-        for row in 0 .. 4 {
+            for row in 0 .. 4 {
             for col in 0 .. 4 {
-                if figure_map[row][col] {
+                if figure_map[row * 4 + col] {
                     blocks[i] = Point { x: col as i32, y: row as i32 };
                     i += 1;
                     if i == 4 {
@@ -129,6 +98,29 @@ impl FigureRepr {
             blocks,
             center
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Point<T> {
+    pub x: T,
+    pub y: T
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct FigureRepr {
+    /// block coordinates
+    pub blocks: [Point<i32>;4],
+    /// rotation center
+    center: Point<f32>,
+}
+
+impl FigureRepr {
+
+    /// create figure out of visual map and normalize its coordinates relatively to its center of mass
+    ///
+    pub fn new<T: Into<Self>>(another_repr: T) -> Self {
+        another_repr.into()
     }
 
     pub fn rotate(&mut self) {
