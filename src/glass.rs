@@ -65,17 +65,17 @@ impl Glass {
             let glass_row = row + y as isize;
             let glass_col = col + x as isize;
 
-            let is_outsize_glass =
-                glass_row < 0 || glass_row >= self.height as isize ||
-                    glass_col < 0 || glass_col >= self.width as isize;
-
             let taken = || { self[glass_row as usize][glass_col as usize] };
 
-            if is_outsize_glass || taken() {
+            if self.is_outsize_glass(glass_row, glass_col) || taken() {
                 return false;
             }
         }
         true
+    }
+
+    fn is_outsize_glass(&self, row: isize, col: isize) -> bool {
+        row < 0 || row >= self.height as isize || col < 0 || col >= self.width as isize
     }
 
     pub fn rotate_figure(&mut self) -> bool {
@@ -108,11 +108,7 @@ impl Glass {
                 let glass_row = row + y as isize;
                 let glass_col = col + x as isize;
 
-                let is_outsize_glass =
-                    glass_row < 0 || glass_row > self.height as isize || //TODO duplicates see fit_glass
-                    glass_col < 0 || glass_col > self.width as isize;
-
-                if !is_outsize_glass {
+                if !self.is_outsize_glass(glass_row, glass_col) {
                     self[glass_row as usize][glass_col as usize] = true;
                 }
             }
