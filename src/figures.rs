@@ -171,6 +171,14 @@ impl FigureRepr {
             block.y = rotated.y.ceil() as i32;
         }
     }
+
+    pub fn center_x(&self) -> isize {
+        self.center.x.ceil() as isize
+    }
+
+    pub fn min_y(&self) -> isize {
+        self.blocks.iter().map(|p| { p.y }).min().unwrap() as isize
+    }
 }
 
 extern crate rand;

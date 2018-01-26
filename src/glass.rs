@@ -48,11 +48,11 @@ impl Glass {
         }
     }
 
-    pub fn place(&mut self, fmap: FigureRepr, (row, col): (isize, isize)) -> bool {
-        if !self.fit_glass(&fmap, (row, col)) { false }
+    pub fn place(&mut self, figure: FigureRepr, (row, col): (isize, isize)) -> bool {
+        if !self.fit_glass(&figure, (row, col)) { false }
         else {
             self.figure = Some(FigureInGlass {
-                figure: fmap,
+                figure,
                 position: (row, col)
             });
             true
@@ -142,8 +142,8 @@ impl Glass {
     pub fn next_figure(&mut self) -> bool {
         let figure = rand::random::<Figure>();
         let figure_repr = FigureRepr::new(figure);
-        let row = 0;
-        let col = (self.width as isize - 4) / 2;
+        let row = 0 - figure_repr.min_y();
+        let col = (self.width as isize) / 2 - figure_repr.center_x();
         !self.place(figure_repr, (row, col))
     }
 }
