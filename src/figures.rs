@@ -182,6 +182,16 @@ mod tests {
         }
     }
 
+    #[derive(Copy, Clone, Debug)]
+    struct OneToThree(u32);
+
+    impl Arbitrary for OneToThree {
+
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            OneToThree(g.gen_range(1, 4))
+        }
+    }
+
     quickcheck! {
 
         /// four consecutive rotations bring figure to initial shape and its position
@@ -194,6 +204,17 @@ mod tests {
             repr.rotate();
 
             orig.blocks == repr.blocks
+        }
+
+        /// 1 to 3 consecutive rotations result in distinct figure representation
+        fn one_to_three_rotations(orig: FigureRepr, one_to_three: OneToThree) -> bool {
+            let mut repr = orig.clone();
+
+            for _ in 0 .. one_to_three.0 {
+                repr.rotate();
+            }
+
+            orig.blocks != repr.blocks
         }
     }
 
