@@ -127,48 +127,11 @@ impl FigureRepr {
         let dx = self.center.x;
         let dy = self.center.y;
 
-        let mut tmp_blocks = [Point { x: 0.0, y: 0.0 }; 4];
-
-        // move to rotation center
-        for (org, mut norm) in self.blocks.iter().zip(tmp_blocks.iter_mut()) {
-            *norm = Point {
-                x: org.x as f32 - dx,
-                y: org.y as f32 - dy,
+        for p in self.blocks.iter_mut() {
+            *p = Point {
+                x: (-(p.y as f32 - dy) + dx).ceil() as i32,
+                y: (p.x as f32 - dx + dy).ceil() as i32
             }
-        }
-
-        // rotate
-//        for &mut Point { ref mut x, ref mut y } in tmp_blocks.iter_mut() {
-//            let new_x = -*y;
-//            let new_y = *x;
-//            *x = new_x;
-//            *y = new_y;
-//        }
-        for p in tmp_blocks.iter_mut() {
-            let new_x = -p.y;
-            let new_y = p.x;
-            p.x = new_x;
-            p.y = new_y;
-        }
-
-        // de-normalize move back from center of mass to origin position by applying rotated shift
-//        for &mut Point { ref mut x, ref mut y } in tmp_blocks.iter_mut() {
-//            *x += dx;
-//            *y += dy;
-//        }
-        for p in tmp_blocks.iter_mut() {
-            p.x += dx;
-            p.y += dy;
-        }
-
-        // modify origin coordinates by rounding float point result
-//        for (&mut Point {ref mut x, ref mut y}, &Point {x: fx, y: fy}) in self.blocks.iter_mut().zip(tmp_blocks.iter()) {
-//            *x = fx.ceil() as i32;
-//            *y = fy.ceil() as i32;
-//        }
-        for (mut block, &rotated) in self.blocks.iter_mut().zip(tmp_blocks.iter()) {
-            block.x = rotated.x.ceil() as i32;
-            block.y = rotated.y.ceil() as i32;
         }
     }
 
