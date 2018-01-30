@@ -198,7 +198,7 @@ mod tests {
             glass.place(repr, (pos.0, pos.1)) == fit_glass
         }
 
-        fn placed_figure_set(repr: FigureRepr, dim: GlassSize, pos: FigurePos) -> bool {
+        fn placed_figure_stay_if_fit(repr: FigureRepr, dim: GlassSize, pos: FigurePos) -> bool {
             let mut glass = Glass::new(dim.0, dim.1);
 
             let fit_glass = glass.place(repr, (pos.0, pos.1));
