@@ -165,4 +165,54 @@ impl ::std::ops::IndexMut<usize> for Glass {
     }
 }
 
-//TODO how to test Glass?
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use quickcheck::Arbitrary;
+    use quickcheck::Gen;
+
+    #[derive(Copy, Clone, Debug)]
+    struct GlassSize(usize, usize);
+    impl Arbitrary for GlassSize {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            GlassSize(g.gen_range(10, 15), g.gen_range(10, 15))
+        }
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    struct FigurePos(isize, isize);
+    impl Arbitrary for FigurePos {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            FigurePos(g.gen_range(-5, 20), g.gen_range(-5, 20))
+        }
+    }
+
+    quickcheck! {
+
+        fn placed_figure_should_fit(repr: FigureRepr, dim: GlassSize, pos: FigurePos) -> bool {
+            let mut glass = Glass::new(dim.0, dim.1);
+
+            let fit_glass = glass.fit_glass(&repr, (pos.0, pos.1));
+
+            glass.place(repr, (pos.0, pos.1)) == fit_glass
+        }
+
+        fn placed_figure_set(repr: FigureRepr, dim: GlassSize, pos: FigurePos) -> bool {
+            let mut glass = Glass::new(dim.0, dim.1);
+
+            let fit_glass = glass.place(repr, (pos.0, pos.1));
+
+            glass.figure.is_some() == fit_glass
+        }
+
+        fn figure_cant_be_placed_twice(repr: FigureRepr, dim: GlassSize, pos: FigurePos) -> bool {
+            let mut glass = Glass::new(dim.0, dim.1);
+
+            glass.place(repr, (pos.0, pos.1));
+            glass.freeze_figure();
+
+            !glass.place(repr, (pos.0, pos.1))
+        }
+    }
+}
