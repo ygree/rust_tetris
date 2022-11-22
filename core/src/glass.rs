@@ -1,10 +1,5 @@
-
-extern crate rand;
-
-use figures::Figure;
-use figures::FigureRepr;
-use figures::Point;
-use self::rand::Rng;
+use crate::figures::{Figure, FigureRepr};
+use rand::Rng;
 
 pub struct Glass {
     pub width: usize,
@@ -61,7 +56,7 @@ impl Glass {
     /// (row, col) - position in the glass. 0 row is the upper row.
     fn fit_glass(&self, fmap: &FigureRepr, (row, col): (isize, isize)) -> bool {
 
-        for &Point { x, y } in fmap.blocks.iter() {
+        for &(x, y) in fmap.blocks.iter() {
             let glass_row = row + y as isize;
             let glass_col = col + x as isize;
 
@@ -104,7 +99,7 @@ impl Glass {
 
     pub fn freeze_figure(&mut self) {
         if let Some( FigureInGlass { figure, position: (row, col) } ) = self.figure.take() {
-            for &Point { x, y } in figure.blocks.iter() {
+            for &(x, y) in figure.blocks.iter() {
                 let glass_row = row + y as isize;
                 let glass_col = col + x as isize;
 
@@ -135,16 +130,24 @@ impl Glass {
     }
 
     pub fn next_figure(&mut self) -> bool {
-        let figure = rand::random::<Figure>();
-        let mut figure_repr = FigureRepr::new(figure);
-
-        for _ in 0..rand::thread_rng().gen_range(0, 4) {
-            figure_repr.rotate();
-        }
+        let figure = rand::thread_rng().gen::<Figure>();
+        let figure_repr = FigureRepr::new(figure);
 
         let row = 0 - figure_repr.min_y();
         let col = (self.width as isize) / 2 - figure_repr.center_x();
         !self.place(figure_repr, (row, col))
+    }
+
+    pub fn figure_coordinates(&self) -> Option<[(i32, i32); 4]> {
+        if let Some(FigureInGlass{figure, position: (px, py)}) = self.figure {
+            let mut blocks = figure.blocks.clone();
+            for (x, y) in &mut blocks {
+                *x += py as i32;
+                *y += px as i32;
+            }
+            return Some(blocks);
+        }
+        return None;
     }
 }
 
@@ -165,11 +168,12 @@ impl ::std::ops::IndexMut<usize> for Glass {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use quickcheck::Arbitrary;
+    use quickcheck::{Arbitrary, quickcheck};
     use quickcheck::Gen;
 
     #[derive(Copy, Clone, Debug)]
@@ -216,3 +220,4 @@ mod tests {
         }
     }
 }
+

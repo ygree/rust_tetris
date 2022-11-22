@@ -1,9 +1,4 @@
 
-
-#[cfg(test)]
-#[macro_use]
-extern crate quickcheck;
-
 extern crate ggez;
 //extern crate rand;
 use ggez::conf;
@@ -17,11 +12,9 @@ use ggez::timer;
 use glass::Glass;
 
 //use figures::Figure;
-use figures::Point;
 use glass::MoveDirection;
 
-mod figures;
-mod glass;
+use core::glass::{Glass, MoveDirection};
 
 struct MainState {
     screen_width: u32,
@@ -81,7 +74,7 @@ impl MainState {
         if self.glass.figure.is_some() {
             let figure = self.glass.figure.unwrap(); //TODO: FIX!
 
-            for &Point { x: col, y: row } in figure.figure.blocks.iter() {
+            for &(col, row) in figure.figure.blocks.iter() {
                 let w = self.block_size;
                 let (f_row, f_col) = figure.position;
                 let x = self.glass_x() + (f_col as f32 + col as f32) * w;
@@ -201,5 +194,4 @@ fn main() {
             }
         }
     }
-
 }

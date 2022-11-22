@@ -1,18 +1,14 @@
-Tetris
-======
 
-![screenshot](screenshot.png)
+# Rust Tetris
 
-QuickCheck
-----------
+## Run Yew version
 
-`export RUST_LOG=quickcheck` enables useful QuickCheck output
+```bash
+./run-yew.sh
+```
 
-Run all tests: `cargo test`
+## Run Core tests
 
-
-Build and Run
--------------
-
-`cargo run`
-
+```
+cargo test -p tetris-core 
+```
