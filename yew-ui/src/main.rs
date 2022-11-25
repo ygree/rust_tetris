@@ -1,6 +1,5 @@
-
 use gloo::timers::callback::Interval;
-use yew::{classes, html, Component, Context, Html};
+use yew::{classes, html, Component, Context, Html, KeyboardEvent};
 use core::glass::{Glass, MoveDirection};
 
 enum Msg {
@@ -124,8 +123,18 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let cell_rows = self.render_rows();
 
+        let onkeydown = ctx.link().batch_callback(|event: KeyboardEvent| {
+            match event.key_code() {
+                37 => Some(Msg::Left),
+                38 => Some(Msg::Rotate),
+                39 => Some(Msg::Right),
+                40 => Some(Msg::Drop),
+                _ => None,
+            }
+        });
+
         html! {
-            <div>
+            <div tabindex="0" {onkeydown}> // tabindex is needed to listen to keydown events
                 <section>
                     <button onclick={ctx.link().callback(|_| Msg::Start)}>{ "Start" }</button>
                 </section>
