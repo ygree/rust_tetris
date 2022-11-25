@@ -4,6 +4,8 @@ use core::glass::{Glass, MoveDirection};
 
 enum Msg {
     Start,
+    Pause,
+    Resume,
     Left,
     Rotate,
     Right,
@@ -13,7 +15,38 @@ enum Msg {
 
 struct App {
     glass: Glass,
-    _interval: Interval,
+    game_ticks: Option<Interval>,
+}
+
+impl App {
+    fn make_progress(&mut self) {
+        if !self.glass.relocate_figure(MoveDirection::Down) {
+            self.glass.freeze_figure();
+            if self.glass.next_figure() {
+                //TODO game over?
+                self.stop_game_ticks();
+            }
+        }
+        self.glass.clean_filled_rows();
+    }
+
+    fn start_new_game(&mut self, ctx: &Context<Self>) {
+        self.glass = Self::new_glass();
+        self.glass.next_figure();
+        self.start_game_ticks(ctx);
+    }
+
+    fn move_left(&mut self) {
+        self.glass.relocate_figure(MoveDirection::Left);
+    }
+
+    fn rotate(&mut self) {
+        self.glass.rotate_figure();
+    }
+
+    fn move_right(&mut self) {
+        self.glass.relocate_figure(MoveDirection::Right);
+    }
 }
 
 impl App {
@@ -64,57 +97,57 @@ impl App {
     fn new_glass() -> Glass {
         Glass::new(12, 26)
     }
+
+    fn start_game_ticks(&mut self, ctx: &Context<Self>) {
+        let callback = ctx.link().callback(|_| Msg::Tick);
+        self.game_ticks.replace(Interval::new(670, move || callback.emit(())));
+    }
+
+    fn stop_game_ticks(&mut self) {
+        self.game_ticks.take();
+    }
+
+    fn new() -> App {
+        Self {
+            glass: Self::new_glass(),
+            game_ticks: None,
+        }
+    }
 }
 
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let mut glass = Self::new_glass();
-
-        glass[25][0] = true;
-        let callback = ctx.link().callback(|_| Msg::Tick);
-        let _interval = Interval::new(670, move || callback.emit(()));
-
-        Self {
-            glass,
-            _interval,
-        }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self::new()
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Tick => {
-                if !self.glass.relocate_figure(MoveDirection::Down) {
-                    self.glass.freeze_figure();
-                    if self.glass.next_figure() {
-                        //TODO game over?
-                    }
-                }
-                self.glass.clean_filled_rows();
-            },
             Msg::Start => {
-                self.glass = Self::new_glass();
-                self.glass.next_figure();
+                self.start_new_game(ctx);
             },
-            Msg::Left => {
-                self.glass.relocate_figure(MoveDirection::Left);
+            Msg::Pause => {
+                self.stop_game_ticks();
             },
-            Msg::Rotate => {
-                self.glass.rotate_figure();
+            Msg::Resume => {
+                self.start_game_ticks(ctx);
             },
-            Msg::Right => {
-                self.glass.relocate_figure(MoveDirection::Right);
+            Msg::Tick => {
+                self.make_progress();
             },
             Msg::Drop => {
-                if !self.glass.relocate_figure(MoveDirection::Down) {
-                    self.glass.freeze_figure();
-                    if self.glass.next_figure() {
-                        //TODO game over?
-                    }
-                }
-                self.glass.clean_filled_rows();
+                self.make_progress();
+            },
+            Msg::Left => {
+                self.move_left();
+            },
+            Msg::Rotate => {
+                self.rotate();
+            },
+            Msg::Right => {
+                self.move_right();
             },
         }
         true
@@ -137,6 +170,8 @@ impl Component for App {
             <div tabindex="0" {onkeydown}> // tabindex is needed to listen to keydown events
                 <section>
                     <button onclick={ctx.link().callback(|_| Msg::Start)}>{ "Start" }</button>
+                    <button onclick={ctx.link().callback(|_| Msg::Pause)}>{ "Pause" }</button>
+                    <button onclick={ctx.link().callback(|_| Msg::Resume)}>{ "Resume" }</button>
                 </section>
                 <section class="game-container">
                     <section class="game-area">

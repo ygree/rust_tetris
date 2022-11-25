@@ -4,4 +4,6 @@
 - [ ] Proper Begin -> Game Over cycle
 - [ ] Refactor
 - [x] Add keyboard support
-- [ ] Do not `Tick` when the game stopped or paused
+- [x] Do not `Tick` when the game stopped or paused
+- [ ] TODO how to mock impl methods of structure in tests?
+- [ ] Disable controls when paused
